@@ -1,0 +1,35 @@
+-- Display funds from departments, total income of employees.
+SELECT SUM(D.DEP_FUNDS) FUNDS, SUM(I.INV_COST) INCOME FROM DEPARTMENT D FULL JOIN EMPLOYEE E ON E.DEP_ID = D.DEP_ID FULL JOIN APPOINTMENT A ON A.EMP_ID = E.EMP_ID FULL JOIN INVOICE I ON I.INV_ID = A.INV_ID; 
+
+-- Count number of patients for an employee.
+SELECT E.EMP_ID, COUNT(P.PAT_ID) EMP_PATIENTS FROM EMPLOYEE E JOIN PATIENT P ON P.EMP_ID = E.EMP_ID  GROUP BY E.EMP_ID; 
+
+-- Display patient's id, first and last name, that have an assigned doctor.
+SELECT PAT_ID, PAT_LNAME, PAT_FNAME FROM PATIENT join employee on PATIENT.EMP_ID=employee.EMP_ID where employee.DEP_ID in(SELECT DEP_ID FROM POSITION WHERE POS_NAME = 'DOCTOR'); 
+
+-- Find number of employees per department. 
+SELECT d.DEP_ID, d.DEP_NAME, COUNT(e.EMP_ID) AS EMP_COUNT FROM DEPARTMENT d JOIN EMPLOYEE e ON d.DEP_ID = e.DEP_ID GROUP BY d.DEP_ID, d.DEP_NAME; 
+
+-- Display departments with more than 2 employees hired after 1980. 
+SELECT d.DEP_ID, d.DEP_NAME, COUNT(e.EMP_ID) AS RECENT_HIRES FROM DEPARTMENT d JOIN EMPLOYEE e ON d.DEP_ID = e.DEP_ID WHERE e.EMP_HIREDATE > TO_DATE('01-JAN-1980', 'DD-MON-YYYY') GROUP BY d.DEP_ID, d.DEP_NAME HAVING COUNT(e.EMP_ID) > 2; 
+
+-- Average invoice of insurance company. 
+SELECT i.INSUR_NAME, AVG(inv.INV_COST) AS AVG_INVOICE FROM INSUR_AGENCY i JOIN INVOICE inv ON i.INSUR_ID = inv.INSUR_ID GROUP BY i.INSUR_NAME; 
+
+-- List patients whos invoice is above average.
+SELECT p.PAT_ID, p.PAT_LNAME, p.PAT_FNAME, inv.INV_COST FROM PATIENT p JOIN INVOICE inv ON p.INSUR_ID = inv.INSUR_ID WHERE inv.INV_COST > (SELECT AVG(INV_COST) FROM INVOICE); 
+
+-- Employees who have prescribed more than 3 prescriptions.
+SELECT e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME, COUNT(pr.PRE_ID) AS PRESCRIPTIONS FROM EMPLOYEE e JOIN PRESCRIPTION pr ON e.EMP_ID = pr.EMP_ID GROUP BY e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME HAVING COUNT(pr.PRE_ID) > 3; 
+
+-- Employees who have operations on patients with invoices above $500.
+SELECT DISTINCT e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME FROM EMPLOYEE e JOIN OPERATION o ON e.EMP_ID = o.EMP_ID JOIN PATIENT p ON o.PAT_ID = p.PAT_ID WHERE EXISTS ( SELECT 1 FROM INVOICE inv WHERE inv.INSUR_ID = p.INSUR_ID AND inv.INV_COST > 500 ); 
+
+-- Number of appointments per employee and department.
+SELECT e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME, d.DEP_NAME, COUNT(a.APP_ID) AS NUM_APPOINTMENTS FROM EMPLOYEE e JOIN DEPARTMENT d ON e.DEP_ID = d.DEP_ID JOIN APPOINTMENT a ON e.EMP_ID = a.EMP_ID GROUP BY e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME, d.DEP_NAME; 
+
+-- Employees with more than 2 operations on patients with invoices over $100.
+SELECT e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME, COUNT(o.OP_ID) AS NUM_OPERATIONS FROM EMPLOYEE e JOIN OPERATION o ON e.EMP_ID = o.EMP_ID JOIN PATIENT p ON o.PAT_ID = p.PAT_ID JOIN INVOICE inv ON p.INSUR_ID = inv.INSUR_ID WHERE inv.INV_COST > 100 GROUP BY e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME HAVING COUNT(o.OP_ID) > 2; 
+
+-- Count how many appointments each employee has, but only for employees who have more than 2 patients.
+SELECT e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME, COUNT(o.OP_ID) AS NUM_OPERATIONS FROM EMPLOYEE e JOIN OPERATION o ON e.EMP_ID = o.EMP_ID JOIN PATIENT p ON o.PAT_ID = p.PAT_ID JOIN INVOICE inv ON p.INSUR_ID = inv.INSUR_ID WHERE inv.INV_COST > 100 GROUP BY e.EMP_ID, e.EMP_FNAME, e.EMP_LNAME HAVING COUNT(o.OP_ID) > 2; 

@@ -1,0 +1,31 @@
+
+-- View 1: Total Invoice Cost per Patient (Aggregation + Join)
+CREATE OR REPLACE VIEW vw_patient_invoice_summary AS
+SELECT p.PAT_ID, p.PAT_LNAME, p.PAT_FNAME, SUM(i.INV_COST) AS TOTAL_COST
+FROM PATIENT p
+JOIN INVOICE i ON p.INSUR_ID = i.INSUR_ID
+GROUP BY p.PAT_ID, p.PAT_LNAME, p.PAT_FNAME;
+
+-- View 2: Doctors with More Than 3 Appointments (Aggregation + Subquery)
+CREATE OR REPLACE VIEW vw_busy_doctors AS
+SELECT e.EMP_ID, e.EMP_LNAME, e.EMP_FNAME, COUNT(a.APP_ID) AS NUM_APPOINTMENTS
+FROM EMPLOYEE e
+JOIN APPOINTMENT a ON e.EMP_ID = a.EMP_ID
+WHERE e.POS_ID IN (SELECT POS_ID FROM POSITION WHERE POS_NAME = 'DOCTOR')
+GROUP BY e.EMP_ID, e.EMP_LNAME, e.EMP_FNAME
+HAVING COUNT(a.APP_ID) > 3;
+
+-- View 3: Department-wise Average Invoice Cost (Subquery + Aggregation + Join)
+CREATE OR REPLACE VIEW vw_avg_invoice_by_department AS
+SELECT d.DEP_NAME, ROUND(AVG(i.INV_COST), 2) AS AVG_COST
+FROM DEPARTMENT d
+JOIN EMPLOYEE e ON d.DEP_ID = e.DEP_ID
+JOIN PATIENT p ON p.EMP_ID = e.EMP_ID
+JOIN INVOICE i ON p.INSUR_ID = i.INSUR_ID
+GROUP BY d.DEP_NAME;
+
+-- View 4: Updatable View (Simple join, no aggregation)
+CREATE OR REPLACE VIEW vw_patient_contact AS
+SELECT PAT_ID, PAT_LNAME, PAT_FNAME, PAT_PNUM
+FROM PATIENT
+WITH CHECK OPTION CONSTRAINT vw_patient_contact_chk;

@@ -1,0 +1,54 @@
+
+CREATE OR REPLACE TRIGGER trg_invoice_insert
+AFTER INSERT ON INVOICE
+FOR EACH ROW
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('New invoice added: ' || :NEW.INV_ID || ', Amount: ' || :NEW.INV_COST);
+END;
+/
+
+
+1. update employee last name
+CREATE OR REPLACE TRIGGER trg_employee_lname_update
+BEFORE UPDATE OF EMP_LNAME ON EMPLOYEE
+FOR EACH ROW
+BEGIN
+  IF :OLD.EMP_LNAME != :NEW.EMP_LNAME THEN
+    DBMS_OUTPUT.PUT_LINE('Employee ID ' || :OLD.EMP_ID || 
+                         ' last name changed from ' || :OLD.EMP_LNAME || 
+                         ' to ' || :NEW.EMP_LNAME);
+  END IF;
+END;
+/
+
+
+--2. trg_room_delete_msg:
+
+CREATE OR REPLACE TRIGGER trg_room_delete_msg
+BEFORE DELETE ON ROOM
+FOR EACH ROW
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Deleting room ID: ' || :OLD.ROOM_ID || ', Status: ' || :OLD.ROOM_STAT);
+END;
+/
+
+
+-- 3. Set room status to CLEAN on insert
+CREATE OR REPLACE TRIGGER trg_room_insert
+BEFORE INSERT ON ROOM
+FOR EACH ROW
+BEGIN
+  :NEW.ROOM_STAT := 'CLEAN';
+END;
+/
+
+4. Change room status:
+CREATE OR REPLACE TRIGGER trg_room_status_change
+BEFORE UPDATE ON ROOM
+FOR EACH ROW
+BEGIN
+  IF :OLD.ROOM_STAT != :NEW.ROOM_STAT THEN
+    DBMS_OUTPUT.PUT_LINE('Room ' || :NEW.ROOM_ID || ' status changed from ' || :OLD.ROOM_STAT || ' to ' || :NEW.ROOM_STAT);
+  END IF;
+END;
+/

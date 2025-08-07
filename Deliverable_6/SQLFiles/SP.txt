@@ -1,0 +1,65 @@
+-- 1. Procedure: Update Room Status
+CREATE OR REPLACE PROCEDURE update_room_status (
+  p_room_id IN NUMBER,
+  p_new_status IN VARCHAR2
+)
+AS
+BEGIN
+  UPDATE ROOM
+  SET ROOM_STAT = p_new_status
+  WHERE ROOM_ID = p_room_id;
+  COMMIT;
+END;
+/
+
+-- 2. Procedure: Check Employee Department Funds
+CREATE OR REPLACE PROCEDURE check_funds (
+  p_emp_id IN NUMBER
+)
+AS
+  v_funds DEPARTMENT.DEP_FUNDS%TYPE;
+BEGIN
+  SELECT D.DEP_FUNDS INTO v_funds
+  FROM EMPLOYEE E
+  JOIN DEPARTMENT D ON E.DEP_ID = D.DEP_ID
+  WHERE E.EMP_ID = p_emp_id;
+
+  IF v_funds < 1000 THEN
+    DBMS_OUTPUT.PUT_LINE('Low department funds: ' || v_funds);
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('Sufficient funds: ' || v_funds);
+  END IF;
+END;
+/
+
+-- 3. Function: Get Employee Full Name
+CREATE OR REPLACE FUNCTION get_emp_fullname (
+  p_emp_id IN NUMBER
+)
+RETURN VARCHAR2
+AS
+  v_fullname VARCHAR2(100);
+BEGIN
+  SELECT EMP_FNAME || ' ' || EMP_LNAME INTO v_fullname
+  FROM EMPLOYEE
+  WHERE EMP_ID = p_emp_id;
+
+  RETURN v_fullname;
+END;
+/
+
+-- 4. Function: Count Appointments for Patient
+CREATE OR REPLACE FUNCTION count_patient_appointments (
+  p_pat_id IN NUMBER
+)
+RETURN NUMBER
+AS
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count
+  FROM APPOINTMENT
+  WHERE PAT_ID = p_pat_id;
+
+  RETURN v_count;
+END;
+/
